@@ -88,11 +88,11 @@ class TestRoutes(TestCase):
         анонимный пользователь перенаправляется на страницу логина.
         """
         login_url = reverse('users:login')
-        urls = self.urls_for_author_only + [
+        urls = self.urls_for_author_only + (
             ('notes:add', None),
             ('notes:list', None),
             ('notes:success', None),
-        ]
+        )
         for name, args in urls:
             with self.subTest(name=name):
                 url = reverse(name, args=args)
