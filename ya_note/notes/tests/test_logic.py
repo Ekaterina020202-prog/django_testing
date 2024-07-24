@@ -39,7 +39,7 @@ class TestNoteCreation(TestCase):
         self.assertRedirects(response, URL_TO_DONE)
         note_count = Note.objects.count()
         self.assertEqual(note_count, notes_count_before + 1)
-        note = Note.objects.get()  # Получаем единственную заметку после очистки базы данных
+        note = Note.objects.get()
         self.assertEqual(note.title, self.form_data['title'])
         self.assertEqual(note.slug, self.form_data['slug'])
         self.assertEqual(note.text, self.form_data['text'])
@@ -57,7 +57,7 @@ class TestNoteCreation(TestCase):
         response = self.auth_client.post(URL_TO_ADD, data=self.form_data)
         self.assertRedirects(response, URL_TO_DONE)
         self.assertEqual(Note.objects.count(), notes_count_before + 1)
-        new_note = Note.objects.get()  # Получаем единственную заметку после очистки базы данных
+        new_note = Note.objects.get()
         expected_slug = slugify(self.form_data['title'])
         self.assertEqual(new_note.slug, expected_slug)
 
@@ -123,8 +123,8 @@ class TestNoteEditDelete(TestCase):
         response = self.reader_client.post(self.edit_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         note = Note.objects.get(id=self.note.id)
-        self.assertEqual(note.text, self.note.text)  # Используем поле объекта вместо жестко заданного значения
-        self.assertEqual(note.title, self.note.title)  # Используем поле объекта вместо жестко заданного значения
+        self.assertEqual(note.text, self.note.text)
+        self.assertEqual(note.title, self.note.title)
         self.assertEqual(note.slug, self.note.slug)
         self.assertEqual(note.author, self.author)
 

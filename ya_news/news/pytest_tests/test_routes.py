@@ -4,7 +4,6 @@ import pytest
 from pytest_django.asserts import assertRedirects
 
 
-# Задаем глобальную переменную для всех тестов
 pytestmark = pytest.mark.django_db
 
 

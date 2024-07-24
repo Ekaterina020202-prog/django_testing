@@ -38,7 +38,7 @@ class TestRoutes(TestCase):
             reverse('notes:edit', args=(cls.note.slug,)),
             reverse('notes:delete', args=(cls.note.slug,)),
         )
-        cls.login_url = reverse('users:login')  # Создание фикстуры для URL логина
+        cls.login_url = reverse('users:login')
 
     def test_pages_availability(self):
         """
@@ -62,7 +62,7 @@ class TestRoutes(TestCase):
             (self.reader_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
-            for url in self.urls_for_author_only:  # Убираем упаковку в кортеж
+            for url in self.urls_for_author_only:
                 with self.subTest(user=user, url=url):
                     response = user.get(url)
                     self.assertEqual(response.status_code, status)
@@ -85,9 +85,9 @@ class TestRoutes(TestCase):
         отдельной заметки, редактирования или удаления заметки
         анонимный пользователь перенаправляется на страницу логина.
         """
-        urls = self.urls_for_author_only + self.urls_for_author_access  # Используем существующий кортеж
+        urls = self.urls_for_author_only + self.urls_for_author_access
         for url in urls:
             with self.subTest(url=url):
-                redirect_url = f'{self.login_url}?next={url}'  # Используем фикстуру для URL логина
+                redirect_url = f'{self.login_url}?next={url}'
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)

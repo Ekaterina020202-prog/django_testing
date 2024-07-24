@@ -16,7 +16,6 @@ FORM_DATA = {
 }
 
 
-
 class CommentForm(ModelForm):
 
     class Meta:

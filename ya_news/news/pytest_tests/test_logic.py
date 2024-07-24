@@ -4,16 +4,15 @@ from http import HTTPStatus
 import pytest
 from pytest_django.asserts import assertFormError, assertRedirects
 
-from news.forms import BAD_WORDS, WARNING, FORM_DATA  # Импортируем FORM_DATA
+from news.forms import BAD_WORDS, WARNING, FORM_DATA
 from news.models import Comment
 
-# Задаем глобальную переменную для всех тестов
 pytestmark = pytest.mark.django_db
 
 
 def test_anonymous_user_cant_create_comment(client, detail_url):
     comments_count_before = Comment.objects.count()
-    client.post(detail_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
+    client.post(detail_url, data=FORM_DATA)
     comments_count_after = Comment.objects.count()
     assert comments_count_after == comments_count_before
 
@@ -26,12 +25,12 @@ def test_user_can_create_comment(
 ):
     Comment.objects.all().delete()
     comments_count_before = Comment.objects.count()
-    response = author_client.post(detail_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
+    response = author_client.post(detail_url, data=FORM_DATA)
     assertRedirects(response, f'{detail_url}#comments')
     comments_count_after = Comment.objects.count()
     assert comments_count_after - comments_count_before == 1
     comment = Comment.objects.get()
-    assert comment.text == FORM_DATA['text']  # Заменено form_data на FORM_DATA
+    assert comment.text == FORM_DATA['text']
     assert comment.news == news
     assert comment.author == author
 
@@ -81,10 +80,10 @@ def test_author_can_edit_comment(
 ):
     old_author = comment.author
     old_news = comment.news
-    response = author_client.post(edit_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
+    response = author_client.post(edit_url, data=FORM_DATA)
     assertRedirects(response, url_to_comments)
     comment.refresh_from_db()
-    assert comment.text == FORM_DATA['text']  # Заменено form_data на FORM_DATA
+    assert comment.text == FORM_DATA['text']
     assert comment.author == old_author
     assert comment.news == old_news
 
