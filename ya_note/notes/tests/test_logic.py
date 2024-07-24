@@ -72,6 +72,12 @@ class TestNoteEditDelete(TestCase):
         cls.reader = User.objects.create(username='Читатель')
         cls.reader_client = Client()
         cls.reader_client.force_login(cls.reader)
+        cls.note = Note.objects.create(
+            title='Заголовок',
+            slug='Slug',
+            author=cls.author,
+            text=cls.NOTE_TEXT
+        )
         cls.edit_url = reverse('notes:edit', args=(cls.note.slug,))
         cls.delete_url = reverse('notes:delete', args=(cls.note.slug,))
         cls.form_data = {
@@ -80,12 +86,6 @@ class TestNoteEditDelete(TestCase):
             'slug': cls.NEW_NOTE_SLUG
         }
         cls.notes_counts = Note.objects.count()
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            slug='Slug',
-            author=cls.author,
-            text=cls.NOTE_TEXT
-        )
 
     def test_author_can_edit_note(self):
         response = self.author_client.post(self.edit_url, data=self.form_data)
@@ -100,7 +100,7 @@ class TestNoteEditDelete(TestCase):
         response = self.author_client.post(self.delete_url)
         self.assertRedirects(response, URL_TO_DONE)
         notes_count = Note.objects.count()
-        self.assertEqual(notes_count, self.notes_counts)
+        self.assertEqual(notes_count, self.notes_counts - 1)
 
     def test_user_cant_edit_note_of_another_user(self):
         response = self.reader_client.post(self.edit_url, data=self.form_data)
@@ -115,7 +115,7 @@ class TestNoteEditDelete(TestCase):
         response = self.reader_client.post(self.delete_url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         notes_count = Note.objects.count()
-        self.assertEqual(notes_count, self.notes_counts + 1)
+        self.assertEqual(notes_count, self.notes_counts)
 
     def test_not_unique_slug(self):
         self.form_data['slug'] = self.note.slug
