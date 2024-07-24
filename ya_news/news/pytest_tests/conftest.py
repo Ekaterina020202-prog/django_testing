@@ -4,9 +4,21 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
+from django.test import Client
 
 from news.models import Comment, News
-from django.test import Client
+
+
+FORM_DATA = {
+    'text': 'Новый текст комментария'
+}
+
+NEWS_LIST = [
+    News(title=f'Новость {index}',
+         text='Просто текст.',
+         date=datetime.today() - timedelta(days=index))
+    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+]
 
 
 @pytest.fixture
@@ -40,33 +52,23 @@ def comment(author, news):
     return comment
 
 
-FORM_DATA = {
-    'text': 'Новый текст комментария'
-}
-
-
-@pytest.fixture
-def pk_for_args(news):
-    return news.id,
-
-
-NEWS_LIST = [
-    News(title=f'Новость {index}',
-         text='Просто текст.',
-         date=datetime.today() - timedelta(days=index))
-    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
-]
-
-
 @pytest.fixture
 def comments_list(news, author):
     now = timezone.now()
+    comments_list = []
     for index in range(2):
         comment = Comment.objects.create(
             news=news, author=author, text=f'Текст {index}',
         )
         comment.created = now + timedelta(days=index)
         comment.save()
+        comments_list.append(comment)
+    return comments_list
+
+
+@pytest.fixture
+def home_url():
+    return reverse('news:home')
 
 
 @pytest.fixture
@@ -75,15 +77,50 @@ def detail_url(news):
 
 
 @pytest.fixture
-def delete_url(news):
-    return reverse('news:delete', args=(news.id,))
+def news_list():
+    # Создаем список новостей
+    today = datetime.today()
+    news_list = News.objects.bulk_create(
+        News(title=f'Новость {index}',
+             text='Просто текст.',
+             date=today - timedelta(days=index))
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+    )
+    return news_list
 
 
 @pytest.fixture
-def edit_url(news):
-    return reverse('news:edit', args=(news.id,))
+def form_data():
+    return {
+        'text': 'Новый текст комментария'
+    }
+
+
+@pytest.fixture
+def delete_url(comment):
+    return reverse('news:delete', args=(comment.id,))
+
+
+@pytest.fixture
+def edit_url(comment):
+    return reverse('news:edit', args=(comment.id,))
 
 
 @pytest.fixture
 def url_to_comments(detail_url):
     return detail_url + '#comments'
+
+
+@pytest.fixture
+def login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    return reverse('users:signup')

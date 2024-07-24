@@ -23,20 +23,20 @@ class TestRoutes(TestCase):
         cls.reader_client.force_login(cls.reader)
 
         cls.urls_for_anonymous_access = (
-            'notes:home',
-            'users:login',
-            'users:logout',
-            'users:signup',
+            reverse('notes:home'),
+            reverse('users:login'),
+            reverse('users:logout'),
+            reverse('users:signup'),
         )
         cls.urls_for_author_access = (
-            'notes:add',
-            'notes:list',
-            'notes:success',
+            reverse('notes:add'),
+            reverse('notes:list'),
+            reverse('notes:success'),
         )
         cls.urls_for_author_only = (
-            ('notes:detail', (cls.note.slug,)),
-            ('notes:edit', (cls.note.slug,)),
-            ('notes:delete', (cls.note.slug,)),
+            (reverse('notes:detail', args=(cls.note.slug,)),),
+            (reverse('notes:edit', args=(cls.note.slug,)),),
+            (reverse('notes:delete', args=(cls.note.slug,)),),
         )
 
     def test_pages_availability(self):
@@ -44,9 +44,8 @@ class TestRoutes(TestCase):
         Проверяем доступность главной страницы анонимному пользователю
         и страниц регистрации, входа и выхода для всех пользователей.
         """
-        for name in self.urls_for_anonymous_access:
-            with self.subTest(name=name):
-                url = reverse(name)
+        for url in self.urls_for_anonymous_access:
+            with self.subTest(url=url):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
@@ -62,9 +61,9 @@ class TestRoutes(TestCase):
             (self.reader_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
-            for name, args in self.urls_for_author_only:
-                with self.subTest(user=user, name=name):
-                    url = reverse(name, args=args)
+            for url_tuple in self.urls_for_author_only:
+                url = url_tuple[0]
+                with self.subTest(user=user, url=url):
                     response = user.get(url)
                     self.assertEqual(response.status_code, status)
 
@@ -75,11 +74,10 @@ class TestRoutes(TestCase):
         страница успешного добавления заметки done/,
         страница добавления новой заметки add/.
         """
-        for name in self.urls_for_author_access:
-            with self.subTest(name=name):
-                url = reverse(name)
+        for url in self.urls_for_author_access:
+            with self.subTest(url=url):
                 response = self.author_client.get(url)
-            self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_redirect_for_anonymous_client(self):
         """При попытке перейти на страницу списка заметок,
@@ -89,13 +87,13 @@ class TestRoutes(TestCase):
         """
         login_url = reverse('users:login')
         urls = self.urls_for_author_only + (
-            ('notes:add', None),
-            ('notes:list', None),
-            ('notes:success', None),
+            (reverse('notes:add'),),
+            (reverse('notes:list'),),
+            (reverse('notes:success'),),
         )
-        for name, args in urls:
-            with self.subTest(name=name):
-                url = reverse(name, args=args)
+        for url_tuple in urls:
+            url = url_tuple[0]
+            with self.subTest(url=url):
                 redirect_url = f'{login_url}?next={url}'
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)

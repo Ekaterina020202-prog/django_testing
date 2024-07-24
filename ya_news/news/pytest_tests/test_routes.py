@@ -1,46 +1,13 @@
 from http import HTTPStatus
 
 import pytest
-from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 
-@pytest.fixture
-def home_url():
-    return reverse('news:home')
+# Задаем глобальную переменную для всех тестов
+pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def detail_url(news):
-    return reverse('news:detail', args=(news.id,))
-
-
-@pytest.fixture
-def login_url():
-    return reverse('users:login')
-
-
-@pytest.fixture
-def logout_url():
-    return reverse('users:logout')
-
-
-@pytest.fixture
-def signup_url():
-    return reverse('users:signup')
-
-
-@pytest.fixture
-def edit_url(comment):
-    return reverse('news:edit', args=(comment.id,))
-
-
-@pytest.fixture
-def delete_url(comment):
-    return reverse('news:delete', args=(comment.id,))
-
-
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'url_fixture, client_fixture, expected_status',
     (
@@ -58,15 +25,13 @@ def delete_url(comment):
 def test_pages_availability(request,
                             url_fixture,
                             client_fixture,
-                            expected_status
-                            ):
+                            expected_status):
     url = request.getfixturevalue(url_fixture)
     client = request.getfixturevalue(client_fixture)
     response = client.get(url)
     assert response.status_code == expected_status
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'url_fixture',
     (
