@@ -11,6 +11,12 @@ BAD_WORDS = (
 WARNING = 'Не ругайтесь!'
 
 
+FORM_DATA = {
+    'text': 'Новый текст комментария'
+}
+
+
+
 class CommentForm(ModelForm):
 
     class Meta:

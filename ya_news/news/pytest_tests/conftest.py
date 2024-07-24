@@ -1,24 +1,12 @@
 from datetime import datetime, timedelta
 
 import pytest
-from django.urls import reverse
-from django.utils import timezone
 from django.conf import settings
 from django.test import Client
+from django.urls import reverse
+from django.utils import timezone
 
 from news.models import Comment, News
-
-
-FORM_DATA = {
-    'text': 'Новый текст комментария'
-}
-
-NEWS_LIST = [
-    News(title=f'Новость {index}',
-         text='Просто текст.',
-         date=datetime.today() - timedelta(days=index))
-    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
-]
 
 
 @pytest.fixture
@@ -87,13 +75,6 @@ def news_list():
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
     return news_list
-
-
-@pytest.fixture
-def form_data():
-    return {
-        'text': 'Новый текст комментария'
-    }
 
 
 @pytest.fixture

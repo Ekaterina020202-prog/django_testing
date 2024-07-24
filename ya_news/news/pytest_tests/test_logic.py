@@ -4,16 +4,16 @@ from http import HTTPStatus
 import pytest
 from pytest_django.asserts import assertFormError, assertRedirects
 
-from news.forms import BAD_WORDS, WARNING
+from news.forms import BAD_WORDS, WARNING, FORM_DATA  # Импортируем FORM_DATA
 from news.models import Comment
 
 # Задаем глобальную переменную для всех тестов
 pytestmark = pytest.mark.django_db
 
 
-def test_anonymous_user_cant_create_comment(client, form_data, detail_url):
+def test_anonymous_user_cant_create_comment(client, detail_url):
     comments_count_before = Comment.objects.count()
-    client.post(detail_url, data=form_data)
+    client.post(detail_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
     comments_count_after = Comment.objects.count()
     assert comments_count_after == comments_count_before
 
@@ -21,19 +21,17 @@ def test_anonymous_user_cant_create_comment(client, form_data, detail_url):
 def test_user_can_create_comment(
         author_client,
         detail_url,
-        form_data,
         news,
         author
 ):
     Comment.objects.all().delete()
     comments_count_before = Comment.objects.count()
-    response = author_client.post(detail_url, data=form_data)
+    response = author_client.post(detail_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
     assertRedirects(response, f'{detail_url}#comments')
     comments_count_after = Comment.objects.count()
     assert comments_count_after - comments_count_before == 1
-    # Достаем объект методом get без аргументов
     comment = Comment.objects.get()
-    assert comment.text == form_data['text']
+    assert comment.text == FORM_DATA['text']  # Заменено form_data на FORM_DATA
     assert comment.news == news
     assert comment.author == author
 
@@ -79,15 +77,14 @@ def test_author_can_edit_comment(
         author_client,
         edit_url,
         url_to_comments,
-        form_data,
         comment
 ):
     old_author = comment.author
     old_news = comment.news
-    response = author_client.post(edit_url, data=form_data)
+    response = author_client.post(edit_url, data=FORM_DATA)  # Заменено form_data на FORM_DATA
     assertRedirects(response, url_to_comments)
     comment.refresh_from_db()
-    assert comment.text == form_data['text']
+    assert comment.text == FORM_DATA['text']  # Заменено form_data на FORM_DATA
     assert comment.author == old_author
     assert comment.news == old_news
 
@@ -95,13 +92,12 @@ def test_author_can_edit_comment(
 def test_user_cant_edit_comment_of_another_user(
         admin_client,
         edit_url,
-        form_data,
         comment
 ):
     old_text = comment.text
     old_author = comment.author
     old_news = comment.news
-    response = admin_client.post(edit_url, data=form_data)
+    response = admin_client.post(edit_url, data=FORM_DATA)
     assert response.status_code == HTTPStatus.NOT_FOUND
     updated_comment = Comment.objects.get(id=comment.id)
     assert updated_comment.text == old_text

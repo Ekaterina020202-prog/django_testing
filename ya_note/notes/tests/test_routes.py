@@ -34,10 +34,11 @@ class TestRoutes(TestCase):
             reverse('notes:success'),
         )
         cls.urls_for_author_only = (
-            (reverse('notes:detail', args=(cls.note.slug,)),),
-            (reverse('notes:edit', args=(cls.note.slug,)),),
-            (reverse('notes:delete', args=(cls.note.slug,)),),
+            reverse('notes:detail', args=(cls.note.slug,)),
+            reverse('notes:edit', args=(cls.note.slug,)),
+            reverse('notes:delete', args=(cls.note.slug,)),
         )
+        cls.login_url = reverse('users:login')  # Создание фикстуры для URL логина
 
     def test_pages_availability(self):
         """
@@ -61,8 +62,7 @@ class TestRoutes(TestCase):
             (self.reader_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
-            for url_tuple in self.urls_for_author_only:
-                url = url_tuple[0]
+            for url in self.urls_for_author_only:  # Убираем упаковку в кортеж
                 with self.subTest(user=user, url=url):
                     response = user.get(url)
                     self.assertEqual(response.status_code, status)
@@ -85,15 +85,9 @@ class TestRoutes(TestCase):
         отдельной заметки, редактирования или удаления заметки
         анонимный пользователь перенаправляется на страницу логина.
         """
-        login_url = reverse('users:login')
-        urls = self.urls_for_author_only + (
-            (reverse('notes:add'),),
-            (reverse('notes:list'),),
-            (reverse('notes:success'),),
-        )
-        for url_tuple in urls:
-            url = url_tuple[0]
+        urls = self.urls_for_author_only + self.urls_for_author_access  # Используем существующий кортеж
+        for url in urls:
             with self.subTest(url=url):
-                redirect_url = f'{login_url}?next={url}'
+                redirect_url = f'{self.login_url}?next={url}'  # Используем фикстуру для URL логина
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)
